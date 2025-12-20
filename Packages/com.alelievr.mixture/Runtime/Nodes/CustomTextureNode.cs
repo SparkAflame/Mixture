@@ -23,7 +23,7 @@ namespace Mixture
 		[Output(name = "Out")]
 		public Texture				output;
 
-		[SerializeField, HideInInspector]
+		[HideInInspector]
 		public CustomRenderTexture	customTexture { get; private set; }
 
 		public Material				initializationMaterial { get; private set; }

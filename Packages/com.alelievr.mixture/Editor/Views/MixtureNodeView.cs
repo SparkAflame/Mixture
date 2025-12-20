@@ -171,11 +171,11 @@ namespace Mixture
 				{
 					for (int i = 0; i < properties.Length; i++)
 					{
-						if (properties[i].type != oldProperties[i].type)
+						if (properties[i].propertyType != oldProperties[i].propertyType)
 							propertyChanged = true;
 						if (properties[i].displayName != oldProperties[i].displayName)
 							propertyChanged = true;
-						if (properties[i].flags != oldProperties[i].flags)
+						if (properties[i].propertyFlags != oldProperties[i].propertyFlags)
 							propertyChanged = true;
 						if (properties[i].name != oldProperties[i].name)
 							propertyChanged = true;
@@ -224,7 +224,7 @@ namespace Mixture
 
 			foreach (var property in properties)
 			{
-				if ((property.flags & (MaterialProperty.PropFlags.HideInInspector | MaterialProperty.PropFlags.PerRendererData)) != 0)
+				if ((property.propertyFlags & (ShaderPropertyFlags.HideInInspector | ShaderPropertyFlags.PerRendererData)) != 0)
 					continue;
 
 				int idx = material.shader.FindPropertyIndex(property.name);
@@ -238,7 +238,7 @@ namespace Mixture
 					continue;
 				
 				// We only display textures that are excluded from the filteredOutProperties (i.e they are not exposed as ports)
-				if (property.type == MaterialProperty.PropType.Texture && nodeTarget is ShaderNode sn)
+				if (property.propertyType == ShaderPropertyType.Texture && nodeTarget is ShaderNode sn)
 				{
 					if (!sn.GetFilterOutProperties().Contains(property.name))
 						continue;
@@ -306,7 +306,7 @@ namespace Mixture
 				float h = editor.GetPropertyHeight(property, displayName);
 
 				// We always display textures on a single line without scale or offset because they are not supported
-				if (property.type == MaterialProperty.PropType.Texture)
+				if (property.propertyType == ShaderPropertyType.Texture)
 					h = EditorGUIUtility.singleLineHeight;
 
 				Rect r = EditorGUILayout.GetControlRect(true, h);
@@ -314,14 +314,14 @@ namespace Mixture
 					property.vectorValue = (Vector4)EditorGUI.Vector2Field(r, displayName, (Vector2)property.vectorValue);
 				else if (property.name.Contains("Vector3"))
 					property.vectorValue = (Vector4)EditorGUI.Vector3Field(r, displayName, (Vector3)property.vectorValue);
-				else if (property.type == MaterialProperty.PropType.Range)
+				else if (property.propertyType == ShaderPropertyType.Range)
 				{
 					if (material.shader.GetPropertyAttributes(idx).Any(a => a.Contains("IntRange")))
 						property.floatValue = EditorGUI.IntSlider(r, displayName, (int)property.floatValue, (int)property.rangeLimits.x, (int)property.rangeLimits.y);
 					else
 						property.floatValue = EditorGUI.Slider(r, displayName, property.floatValue, property.rangeLimits.x, property.rangeLimits.y);
 				}
-				else if (property.type == MaterialProperty.PropType.Texture)
+				else if (property.propertyType == ShaderPropertyType.Texture)
 					property.textureValue = (Texture)EditorGUI.ObjectField(r, displayName, property.textureValue, typeof(Texture), false);
 				else
 					editor.ShaderProperty(r, property, displayName);
@@ -343,7 +343,7 @@ namespace Mixture
 
 			foreach (var property in properties)
 			{
-				if ((property.flags & (MaterialProperty.PropFlags.HideInInspector | MaterialProperty.PropFlags.PerRendererData)) != 0)
+				if ((property.propertyFlags & (ShaderPropertyFlags.HideInInspector | ShaderPropertyFlags.PerRendererData)) != 0)
 					continue;
 
 				// Retrieve the port view from the property name
@@ -351,22 +351,22 @@ namespace Mixture
 				if (portView != null && portView.connected)
 					continue;
 
-				switch (property.type)
+				switch (property.propertyType)
 				{
-					case MaterialProperty.PropType.Float:
+					case ShaderPropertyType.Float:
 						hash += property.floatValue.GetHashCode();
 						break;
-					case MaterialProperty.PropType.Color:
+					case ShaderPropertyType.Color:
 						hash += property.colorValue.GetHashCode();
 						break;
-					case MaterialProperty.PropType.Range:
+					case ShaderPropertyType.Range:
 						hash += property.rangeLimits.GetHashCode();
 						hash += property.floatValue.GetHashCode();
 						break;
-					case MaterialProperty.PropType.Vector:
+					case ShaderPropertyType.Vector:
 						hash += property.vectorValue.GetHashCode();
 						break;
-					case MaterialProperty.PropType.Texture:
+					case ShaderPropertyType.Texture:
 						hash += property.textureValue?.GetHashCode() ?? 0;
 						hash += property.textureScaleAndOffset.GetHashCode();
 						hash += property.textureDimension.GetHashCode();
